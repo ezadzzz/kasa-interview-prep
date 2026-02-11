@@ -808,6 +808,8 @@ function SyncPanel({syncStatus, onSync}) {
 
   const save = () => { GistSync.setConfig(cfg); setMsg('Saved. Pull to load remote data.'); };
   const pull = async () => {
+    const c = GistSync.getConfig();
+    if (!c?.gistId || !c?.token) { setMsg('Error: Enter token and Gist ID first.'); return; }
     setBusy(true); setMsg('');
     try {
       await onSync('pull');
@@ -816,6 +818,8 @@ function SyncPanel({syncStatus, onSync}) {
     setBusy(false);
   };
   const push = async () => {
+    const c = GistSync.getConfig();
+    if (!c?.gistId || !c?.token) { setMsg('Error: Enter token and Gist ID first.'); return; }
     setBusy(true); setMsg('');
     try {
       await onSync('push');
@@ -844,8 +848,8 @@ function SyncPanel({syncStatus, onSync}) {
       <span style={{color:statusColor,fontSize:'.9rem'}}>{statusIcon}</span>
       <span>Sync</span>
     </button>
-    {open && <div style={{position:'fixed',inset:0,zIndex:1000,display:'flex',alignItems:'center',justifyContent:'center',background:'rgba(0,0,0,.7)',backdropFilter:'blur(4px)'}}>
-      <div style={{background:'var(--surface)',border:'1px solid var(--border)',borderRadius:'var(--radius-lg)',padding:28,maxWidth:480,width:'90%',maxHeight:'85vh',overflow:'auto'}}>
+    {open && ReactDOM.createPortal(<div onClick={e=>{if(e.target===e.currentTarget)setOpen(false)}} style={{position:'fixed',top:0,left:0,right:0,bottom:0,zIndex:1000,display:'flex',alignItems:'center',justifyContent:'center',background:'rgba(0,0,0,.7)',backdropFilter:'blur(4px)',padding:20}}>
+      <div style={{background:'var(--surface)',border:'1px solid var(--border)',borderRadius:'var(--radius-lg)',padding:28,maxWidth:480,width:'90%',maxHeight:'calc(100vh - 40px)',overflowY:'auto'}}>
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:20}}>
           <h3 style={{fontFamily:'var(--serif)',fontSize:'1.2rem',color:'var(--gold)'}}>Gist Sync</h3>
           <button onClick={()=>setOpen(false)} style={{background:'none',border:'none',color:'var(--text-dim)',fontSize:'1.2rem',cursor:'pointer'}}>✕</button>
@@ -884,7 +888,7 @@ function SyncPanel({syncStatus, onSync}) {
           </p>
         </div>
       </div>
-    </div>}
+    </div>, document.body)}
   </>;
 }
 
