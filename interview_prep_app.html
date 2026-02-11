@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kasa Interview Prep</title>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root {
+  --bg: #121010; --bg-warm: #1a1614; --surface: #231f1c; --surface-hover: #2d2724;
+  --border: #3a3330; --border-light: #4a4038;
+  --text: #e8e0d8; --text-muted: #9a8e82; --text-dim: #6a5e52;
+  --gold: #c9a84c; --gold-dim: #8a7434; --gold-glow: #c9a84c33;
+  --amber: #d4a853; --teal: #5bb5a6; --teal-dim: #3a7a6e;
+  --coral: #d46a5a; --coral-dim: #8a3a2e;
+  --green: #6aaa72; --green-dim: #3a6a3e;
+  --yellow: #cca855; --yellow-dim: #7a6a2e;
+  --red: #c45a4a; --red-dim: #7a2a22;
+  --serif: 'DM Serif Display', Georgia, serif;
+  --sans: 'Outfit', -apple-system, sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+  --radius: 10px; --radius-lg: 16px;
+}
+html { font-size: 16px; }
+body {
+  background: var(--bg); color: var(--text); font-family: var(--sans); font-weight: 400;
+  line-height: 1.6; min-height: 100vh; -webkit-font-smoothing: antialiased;
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% 0%, #1e181522 0%, transparent 50%),
+    radial-gradient(ellipse 60% 40% at 80% 100%, #1a141022 0%, transparent 50%);
+}
+::selection { background: var(--gold); color: var(--bg); }
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+/* Animations */
+@keyframes fadeUp { from { opacity:0; transform:translateY(12px) } to { opacity:1; transform:translateY(0) } }
+@keyframes fadeIn { from { opacity:0 } to { opacity:1 } }
+@keyframes slideDown { from { opacity:0; max-height:0 } to { opacity:1; max-height:2000px } }
+@keyframes pulse { 0%,100% { opacity:1 } 50% { opacity:.6 } }
+@keyframes shimmer {
+  0% { background-position: -200% center }
+  100% { background-position: 200% center }
+}
+.fade-up { animation: fadeUp .4s cubic-bezier(.16,1,.3,1) both }
+.fade-in { animation: fadeIn .3s ease both }
+.stagger-1 { animation-delay: .05s } .stagger-2 { animation-delay: .1s }
+.stagger-3 { animation-delay: .15s } .stagger-4 { animation-delay: .2s }
+.stagger-5 { animation-delay: .25s }
+
+/* Layout */
+.app { max-width: 900px; margin: 0 auto; padding: 0 20px 80px; }
+.header {
+  position: sticky; top: 0; z-index: 100; padding: 16px 0;
+  background: linear-gradient(to bottom, var(--bg) 60%, transparent);
+  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+}
+.header-inner {
+  display: flex; align-items: center; justify-content: space-between;
+  padding-bottom: 14px; border-bottom: 1px solid var(--border);
+}
+.header h1 {
+  font-family: var(--serif); font-size: 1.5rem; color: var(--gold);
+  letter-spacing: -.01em; font-weight: 400;
+}
+.header-sub { font-size: .75rem; color: var(--text-dim); letter-spacing: .04em; text-transform: uppercase; margin-top: 2px; }
+.header-stats { display: flex; gap: 20px; }
+.stat { text-align: right; }
+.stat-val { font-family: var(--mono); font-size: .95rem; color: var(--gold); font-weight: 500; }
+.stat-label { font-size: .65rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: .06em; }
+
+/* Tab Navigation */
+.tab-nav {
+  display: flex; gap: 2px; margin: 20px 0 28px; padding: 3px;
+  background: var(--surface); border-radius: var(--radius-lg); border: 1px solid var(--border);
+  overflow-x: auto; -ms-overflow-style: none; scrollbar-width: none;
+}
+.tab-nav::-webkit-scrollbar { display: none; }
+.tab-btn {
+  flex: 1; min-width: 100px; padding: 10px 14px; border: none; border-radius: var(--radius);
+  background: transparent; color: var(--text-muted); cursor: pointer;
+  font-family: var(--sans); font-size: .78rem; font-weight: 500;
+  letter-spacing: .02em; white-space: nowrap; transition: all .2s;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+}
+.tab-btn:hover { color: var(--text); background: var(--surface-hover); }
+.tab-btn.active {
+  color: var(--bg); background: var(--gold);
+  font-weight: 600; box-shadow: 0 2px 12px var(--gold-glow);
+}
+.tab-icon { font-size: 1rem; line-height: 1; }
+
+/* Cards */
+.card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg);
+  padding: 24px; margin-bottom: 12px; transition: border-color .2s;
+}
+.card:hover { border-color: var(--border-light); }
+.card-glow {
+  box-shadow: 0 0 0 1px var(--gold-dim), 0 4px 24px var(--gold-glow);
+  border-color: var(--gold-dim);
+}
+
+/* Section titles */
+.section-title {
+  font-family: var(--serif); font-size: 1.6rem; color: var(--text);
+  margin-bottom: 4px; font-weight: 400;
+}
+.section-sub { font-size: .82rem; color: var(--text-muted); margin-bottom: 24px; }
+
+/* Tags */
+.tag {
+  display: inline-flex; align-items: center; padding: 3px 10px;
+  border-radius: 20px; font-size: .68rem; font-weight: 500;
+  letter-spacing: .03em; text-transform: uppercase;
+  border: 1px solid var(--border); color: var(--text-muted);
+  background: var(--bg-warm);
+}
+.tag-gold { border-color: var(--gold-dim); color: var(--gold); background: #c9a84c11; }
+.tag-teal { border-color: var(--teal-dim); color: var(--teal); background: #5bb5a611; }
+.tag-coral { border-color: var(--coral-dim); color: var(--coral); background: #d46a5a11; }
+
+/* Buttons */
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 18px; border-radius: var(--radius); border: 1px solid var(--border);
+  background: var(--surface); color: var(--text-muted); cursor: pointer;
+  font-family: var(--sans); font-size: .8rem; font-weight: 500;
+  transition: all .2s; white-space: nowrap;
+}
+.btn:hover { border-color: var(--border-light); color: var(--text); background: var(--surface-hover); }
+.btn-gold {
+  background: var(--gold); color: var(--bg); border-color: var(--gold);
+  font-weight: 600;
+}
+.btn-gold:hover { background: var(--amber); border-color: var(--amber); color: var(--bg); }
+.btn-sm { padding: 5px 12px; font-size: .72rem; }
+
+/* Confidence Buttons */
+.conf-btn {
+  flex: 1; padding: 10px; border-radius: var(--radius); border: 1px solid var(--border);
+  background: transparent; cursor: pointer; font-family: var(--sans);
+  font-size: .78rem; font-weight: 500; transition: all .2s; text-align: center;
+}
+.conf-red { color: var(--red); border-color: var(--red-dim); }
+.conf-red:hover, .conf-red.active { background: #c45a4a18; border-color: var(--red); }
+.conf-yellow { color: var(--yellow); border-color: var(--yellow-dim); }
+.conf-yellow:hover, .conf-yellow.active { background: #cca85518; border-color: var(--yellow); }
+.conf-green { color: var(--green); border-color: var(--green-dim); }
+.conf-green:hover, .conf-green.active { background: #6aaa7218; border-color: var(--green); }
+
+/* Inputs */
+.select-input {
+  padding: 7px 12px; border-radius: var(--radius); border: 1px solid var(--border);
+  background: var(--surface); color: var(--text); font-family: var(--sans);
+  font-size: .78rem; cursor: pointer; appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236a5e52'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 10px center;
+  padding-right: 28px;
+}
+.select-input:focus { outline: none; border-color: var(--gold-dim); }
+textarea.edit-area {
+  width: 100%; min-height: 80px; padding: 12px; border-radius: var(--radius);
+  border: 1px solid var(--border); background: var(--bg); color: var(--text);
+  font-family: var(--sans); font-size: .85rem; line-height: 1.6; resize: vertical;
+  transition: border-color .2s;
+}
+textarea.edit-area:focus { outline: none; border-color: var(--gold-dim); }
+.checkbox-custom {
+  width: 20px; height: 20px; border-radius: 5px; border: 1.5px solid var(--border);
+  background: var(--bg); cursor: pointer; appearance: none; flex-shrink: 0;
+  transition: all .15s; position: relative;
+}
+.checkbox-custom:checked {
+  background: var(--gold); border-color: var(--gold);
+}
+.checkbox-custom:checked::after {
+  content: ''; position: absolute; top: 3px; left: 6px;
+  width: 5px; height: 9px; border: solid var(--bg); border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+/* STAR reveal */
+.star-label {
+  display: flex; align-items: center; gap: 10px; padding: 10px 14px;
+  border-radius: var(--radius); cursor: pointer; transition: all .2s;
+  border: 1px solid var(--border); margin-bottom: 6px; user-select: none;
+}
+.star-label:hover { border-color: var(--border-light); background: var(--surface-hover); }
+.star-label.revealed { border-color: var(--gold-dim); background: var(--bg-warm); }
+.star-letter {
+  font-family: var(--serif); font-size: 1.1rem; width: 28px; height: 28px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 6px; flex-shrink: 0;
+}
+.star-label .star-letter { background: var(--bg); color: var(--text-dim); border: 1px solid var(--border); }
+.star-label.revealed .star-letter { background: var(--gold); color: var(--bg); border-color: var(--gold); }
+.star-content { padding: 4px 14px 14px 52px; color: var(--text-muted); font-size: .85rem; line-height: 1.7; }
+
+/* Progress bar */
+.progress-track { width: 100%; height: 4px; background: var(--bg); border-radius: 2px; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--gold); border-radius: 2px; transition: width .5s cubic-bezier(.16,1,.3,1); }
+
+/* Timer */
+.timer-display {
+  font-family: var(--mono); font-size: 2.2rem; color: var(--gold);
+  letter-spacing: .04em; font-weight: 500;
+}
+.timer-target { font-size: .75rem; color: var(--text-dim); font-family: var(--mono); }
+
+/* Navigation dots & arrows */
+.nav-arrow {
+  width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--border);
+  background: var(--surface); color: var(--text-muted); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem; transition: all .2s;
+}
+.nav-arrow:hover { border-color: var(--gold-dim); color: var(--gold); background: var(--surface-hover); }
+.nav-counter { font-family: var(--mono); font-size: .82rem; color: var(--text-dim); letter-spacing: .04em; }
+
+/* Coverage badge */
+.badge { padding: 3px 8px; border-radius: 4px; font-size: .65rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; }
+.badge-strong { background: #6aaa7218; color: var(--green); border: 1px solid var(--green-dim); }
+.badge-partial { background: #cca85518; color: var(--yellow); border: 1px solid var(--yellow-dim); }
+.badge-gap { background: #c45a4a18; color: var(--red); border: 1px solid var(--red-dim); }
+.badge-adaptable { background: #5bb5a618; color: var(--teal); border: 1px solid var(--teal-dim); }
+
+/* Expandable */
+.expand-trigger {
+  width: 100%; display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 20px; border: none; background: none; cursor: pointer;
+  text-align: left; color: var(--text);
+}
+.expand-arrow {
+  width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;
+  color: var(--text-dim); transition: transform .2s; font-size: .8rem;
+}
+.expand-arrow.open { transform: rotate(180deg); }
+.expand-body { padding: 0 20px 20px; }
+
+/* Divider */
+.divider { height: 1px; background: var(--border); margin: 16px 0; }
+
+/* Responsive */
+@media (max-width: 640px) {
+  .app { padding: 0 14px 60px; }
+  .header h1 { font-size: 1.2rem; }
+  .header-stats { gap: 12px; }
+  .tab-btn { min-width: 80px; padding: 8px 10px; font-size: .72rem; }
+  .tab-icon { display: none; }
+  .section-title { font-size: 1.3rem; }
+  .card { padding: 18px; }
+  .star-content { padding-left: 14px; }
+}
+
+/* Grain overlay */
+body::after {
+  content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 9999;
+  opacity: .025;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat: repeat; background-size: 256px 256px;
+}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useCallback, useMemo, useRef } = React;
+
+// ===== DATA =====
+
+const STAR_STORIES = [
+  { id:'story-1', num:1, title:'USALI Conversion Framework', tags:['achievement','initiative','technical'], summary:'Self-taught USALI 11th edition and built automated conversion system enabling 100% portfolio compliance.', usableFor:['USALI experience and hospitality accounting knowledge','Self-teaching ability and technical mastery','Building scalable infrastructure and systems thinking','Major professional accomplishments'], situation:"Many external partners were hotel operators expecting USALI financials. Yardi configured for multifamily accounting w/ no standardized conversion capability. Partners couldn't benchmark against broader hotel portfolios.", task:'Enable USALI reporting for 100% of portfolio, generated quickly without overhauling existing systems.', action:'Self-taught USALI 11th edition cover-to-cover (no prior hospitality accounting background) and became leading expert at company. Built custom Excel chart of accounts mapping thousands of Yardi GL accounts to USALI equivalents. Designed Excel-based USALI operating statements that auto-updated when Yardi P&Ls loaded via lookup functions.', result:'100% portfolio reporting in industry-standard USALI format at click of a button. Eliminated days of manual conversion work per property per month. Infinitely scalable without requiring rework. Hotel partners could benchmark against broader portfolios (strengthened relationships).', talkingTime:'~2 min', followUps:["What's the difference between USALI and multifamily accounting?","How would you train someone on USALI standards?","How did you ensure accuracy when self-teaching?","How would you apply this to the Mint House integration?"] },
+  { id:'story-2', num:2, title:'AI-Powered Laundry Cost Analysis', tags:['achievement','initiative','technical','creativity'], summary:'Used Gemini 2.5 Pro to analyze 100+ invoices in one day, identified $75K in cost increases, and negotiated savings.', usableFor:['Technology and automation mindset','Cost reduction initiatives','Problem-solving with innovative approaches','Proactive identification of business issues'], situation:'Properties switched laundry vendors in 2023. Partners noticing frequent budget misses. GMs lacked satisfactory explanation—data buried in 100+ weekly PDF invoices with inconsistent formats. Manual analysis would have taken weeks.', task:'Determine root cause of cost increases. Quantify the impact to enable corrective action.', action:'Took AI-first approach using Gemini 2.5 Pro within days of December launch. Extracted line-item data from 100+ unstructured PDFs. Processed 27 months of invoice data in single day. Analysis revealed 76% average cost increase since vendor switch. Identified root causes: specialty item charges and minimum weight delivery fees not in original contract. Built dashboard visualizing cost trends.', result:'Completed in one day what would have taken weeks manually. Identified $75K in annual cost increases that had gone completely undetected. Negotiated with vendor to address pricing structure and secure savings. Demonstrated AI could solve problems operations team had given up on.', talkingTime:'~2 min', followUps:["How did you validate the AI's accuracy?","What other AI tools have you experimented with?"] },
+  { id:'story-3', num:3, title:'Offshore Analyst Management', tags:['leadership','collaboration'], summary:'Managed and developed 2 offshore analysts across time zones, achieving 95%+ accuracy and enabling one promotion.', usableFor:['Managing offshore or remote teams','Mentoring and developing junior talent','Building asynchronous workflows across time zones','Team leadership and delegation'], situation:'Managed 2 offshore analysts (India and Colombia). Responsible for partner decks, ad-hoc analysis, financial reporting support. Early-career with limited hospitality and USALI exposure.', task:'Develop their technical capabilities. Ensure work quality met organizational standards. Build asynchronous communication frameworks enabling independent work.', action:'Built structured hands-on development program covering USALI framework, variance analysis, PowerBI basics. Implemented weekly 1:1s with specific, constructive feedback. Created shared task management calendar in MS Planner for real-time project visibility. Established clear deadline communication and standardized workflows. Developed quality checklists ensuring consistency without oversight.', result:'Team achieved 95%+ accuracy on monthly close deliverables. Significantly reduced rework cycles. Reduced need for constant check-ins through transparent deadline management. Freed up capacity for higher-value strategic analysis by building their independence.', talkingTime:'~2 min', followUps:['How did you handle performance issues?','What was your approach to time zone coordination?','How did you build trust remotely?',"How would you apply this to Kasa's Mexico-based team?"] },
+  { id:'story-4', num:4, title:'$600K Delinquency Recovery', tags:['achievement','technical','collaboration'], summary:'Investigated P&L-cash disconnect, uncovered $600K commercial tenant delinquency, and recovered funds plus 15% higher rent.', usableFor:['Investigative problem-solving','Cross-functional collaboration','Complex financial analysis','Creating business value beyond reporting'], situation:"Revenues meeting expectations but property frequently short on cash. During cash flow forecasting, noticed P&L-cash disconnect from Commercial tenant AR balance. Unclear collection responsibilities and multiple lease amendments complicating terms.", task:'Investigate P&L-cash disconnect and determine accurate AR position. Identify root cause and develop recovery strategy.', action:"Reconciled recorded ledger payments to actual bank statements. Rebuilt ledger from ground up with accurate charges, rent abatements, catch-up payments per lease amendments. Applied verified bank-based payments to uncover actual $600K delinquency spanning multiple years. Worked with legal, ops, ownership to develop collection and eviction strategy.", result:'Negotiated settlement with tenant who agreed to pay partial balance and voluntarily vacate. Engaged commercial broker and secured replacement tenant at 15% higher rent psf. Demonstrated investigative financial analysis drives asset value recovery beyond routine reporting.', talkingTime:'~2 min', followUps:['How did you convince stakeholders to pursue eviction?','What warning signs should have caught this earlier?','How did you balance relationship management with financial recovery?'] },
+  { id:'story-5', num:5, title:'57% Faster Monthly Close', tags:['achievement','collaboration','growth','pressure'], summary:'Reduced monthly close from 12 days to 5 days through systematic process improvement and stakeholder training.', usableFor:['Process improvement and efficiency gains','Managing competing priorities','Stakeholder management','Scalable systems that handle growth'], situation:'When I joined Placemakr, monthly close took 12 days with frequent fire drills and last-minute scrambles. Delayed critical financial information reaching partners and leadership.', task:'Accelerate the monthly close timeline while maintaining accuracy and managing other responsibilities like annual budgeting and partner presentations.', action:"Systematically addressed bottlenecks. Analyzed where time was being lost. Created standardized Executive Summary and Variance templates. Wrote Variance Narrative SOP for consistency. Implemented Monday.com board for cross-functional accountability. Trained GMs on proper root-cause variance commentary upfront. Implemented accruals/reclasses form to surface issues early.", result:"Reduced monthly close from 12 days to 5 days—57% improvement. Eliminated last-minute fire drills. Freed capacity for strategic work. System scaled when portfolio doubled without adding headcount.", talkingTime:'~2 min', followUps:['How did you get buy-in from GMs?','What resistance did you face?','How did you balance this with other responsibilities?'] },
+  { id:'story-6', num:6, title:'Portfolio KPI Dashboard', tags:['achievement','technical','initiative'], summary:'Built automated portfolio dashboard that became organization-wide source of truth used by 200+ employees and board.', usableFor:['Building scalable infrastructure','Data visualization and reporting','Organizational impact and adoption','Identifying unmet needs proactively'], situation:'Leadership relied on inconsistent property-level reports in various formats. No single source of truth for portfolio performance.', task:'Build a centralized reporting tool serving as the primary portfolio performance scorecard for the entire organization.', action:'Built automated Excel dashboard pulling data from Yardi (ERP) and Apaleo (PMS). Tracked occupancy, ADR, RevPAR, revenues, expenses, NOI by property. Included drill-down capability by property and market. Embedded rules-based logic for intercompany eliminations for REIT structures. Set up monthly refresh process.', result:'Dashboard became THE source of truth for executive meetings and board reporting. 200+ employees relied on it monthly. Demonstrated ability to identify an organizational need no one asked me to solve, build a solution, and achieve company-wide adoption.', talkingTime:'~2 min', followUps:['How did you ensure data accuracy?','What was the hardest technical challenge?','How did you drive adoption?','Would you use different tools today?'] },
+  { id:'story-7', num:7, title:'Annual Budget Process Leadership', tags:['leadership','achievement','collaboration'], summary:'Led company-wide annual budget process, standardizing methodology across all properties for portfolio-level EBITDA forecasting.', usableFor:['Leading strategic initiatives','Cross-functional collaboration','Standardizing processes across portfolio','Budget forecasting and financial planning'], situation:"Each GM built annual budgets in their own format, making portfolio-level aggregation nearly impossible. No consistent methodology.", task:'Lead the annual budget process for the entire portfolio, collaborating with GMs to develop property-level operating budgets rolling into company-wide planning.', action:"Created standardized budget template with consistent revenue and cost drivers—occupancy projections, Rooms Revenue calculations, FTE planning—aligned to USALI. Built comparison reports to prior years. Took GM feedback to iterate on UX design. Led one-on-one budget planning sessions with each GM.", result:"Standardized approach improved forecast accuracy, giving leadership a true apples-to-apples portfolio view. Budget model fed directly into corporate FP&A. Demonstrated ability to bring order to chaos and create scalable processes.", talkingTime:'~2 min', followUps:['How did you get buy-in from GMs?','What was the hardest part of standardizing?','How did you balance standardization with property-specific needs?'] },
+  { id:'story-8', num:8, title:'HPOR Productivity Tracker', tags:['achievement','technical','initiative'], summary:'Built Hours Per Occupied Room tracking tool that enabled 23% YoY housekeeping productivity improvement.', usableFor:['Operational metrics development','Cost analysis and efficiency improvements','Translating financial data into operational tools','Property-level problem-solving'], situation:'Housekeeping labor costs running significantly above budget, but GMs had no baseline to determine if due to poor productivity or more room nights being sold.', task:'Address runaway housekeeping costs by providing GMs with an operational benchmark to improve scheduling efficiency.', action:'Developed HPOR tracker measuring hours worked against occupied rooms. Pulled labor data from timekeeping and occupancy from PMS. Built dashboard showing HPOR trends. Introduced RevPOLU concept. Trained GMs on data-driven scheduling.', result:'Enabled 23% year-over-year productivity improvement. GMs could distinguish cost overruns from higher occupancy. Showed ability to bridge finance and operations by translating financial problems into operational tools.', talkingTime:'~2 min', followUps:['How did you determine HPOR benchmarks?','What resistance from property teams?','How did you validate the 23% improvement?'] },
+  { id:'story-9', num:9, title:'Proprietary Budget & Forecasting Model', tags:['achievement','technical','initiative'], summary:'Created custom budget model for flexible-living business, becoming company standard for all properties.', usableFor:['Financial modeling expertise','Building scalable infrastructure for unique business models','Technical proficiency in Excel','Creating company-wide standards'], situation:"Placemakr's flex-living model blended multifamily and hospitality, making traditional budgeting approaches inadequate. No off-the-shelf solution existed.", task:'Create a budget and forecasting model tailored to the flexible-use hospitality business model.', action:'Built custom Excel model from scratch incorporating dual revenue streams, variable cost structures tied to occupancy mix, and seasonality patterns. Aligned to USALI. Took GM feedback to iterate on UX. Built validation checks and sensitivity tables.', result:"Model became template for all property budgets and fed into corporate FP&A. Handled unique business model complexity that off-the-shelf solutions couldn't. Demonstrated ability to build technical solutions for complex business problems.", talkingTime:'~2 min', followUps:['Most complex part of modeling dual revenue streams?','How did you handle seasonality?','Would you build it differently today?'] },
+  { id:'story-10', num:10, title:'41% GPR Growth & 34% NOI Budget Beat', tags:['achievement','pressure'], summary:'Exceeded financial projections by 34% NOI and grew GPR by 41% through strategic pricing during lease-up.', usableFor:['Revenue management and pricing strategy','Property-level financial performance','Executing aggressive business plans','Delivering results under pressure'], situation:'Managing a 90-unit boutique multifamily property in Fairfield, CT during lease-up with aggressive financial targets.', task:'Execute the business plan, achieving occupancy and revenue targets while maintaining rent growth projections from underwriting.', action:"Implemented surgical pricing strategy based on real-time market demand signals. Continuously monitored absorption pace and adjusted rates. Pushed pricing aggressively on strong demand unit types. Tracked competitive pricing weekly. Made data-driven pricing decisions daily—treating it like hospitality revenue management.", result:"Exceeded projections by 34% NOI and grew GPR by 41% over pro forma. Property stabilized faster than projected while achieving higher rents. Demonstrated revenue management capability and ability to execute under pressure.", talkingTime:'~2 min', followUps:['How did you balance occupancy velocity vs rent maximization?','What data sources informed pricing?','How would you apply this to hospitality assets?'] },
+  { id:'story-11', num:11, title:'Early AI Adoption (2021 Chatbot)', tags:['achievement','initiative','technical','creativity'], summary:'Piloted AI chatbot in 2021 (pre-ChatGPT), improving conversion by 10% and saving 14 hours weekly.', usableFor:['Early technology adoption','Pattern of being AI-native','Process automation','Problem-solving with emerging technology'], situation:"At the 90-unit Bozzuto property, prospects expected instant responses but team couldn't staff 24/7. Leads going cold after hours. This was early 2021—well before ChatGPT.", task:'Improve lead response times and conversion without adding headcount.', action:"Proactively researched emerging AI chatbot technology. Piloted it, configured with property info and leasing workflows. Monitored conversion metrics and fine-tuned. Positioned it as freeing team for high-touch interactions.", result:"Increased guest card-to-tour conversion by 10% over benchmark while saving 14 hours weekly. Demonstrates consistent pattern: I actively seek cutting-edge tools before they're mainstream.", talkingTime:'~2 min', followUps:['How did you evaluate AI technology that early?','Team concerns about AI replacing jobs?','How did you measure the 10% improvement?'] },
+  { id:'story-12', num:12, title:'Columbia Flex-Use Scenario Modeling', tags:['achievement','technical','collaboration'], summary:'Modeled permanent flex-use conversion demonstrating accretive value, leading to new long-term management contract.', usableFor:['Strategic financial modeling','Complex scenario analysis','Stakeholder influence','Value creation beyond reporting'], situation:"Columbia property was structured as temporary \"pop-up\" during lease-up. Leadership questioned whether to wind down or negotiate permanent presence.", task:'Model financial impact of different scenarios to determine if permanent hospitality presence was accretive to both parties.', action:'Built detailed model comparing scenarios: full return to multifamily vs. maintaining 30+ Placemakr units permanently. Incorporated revenue forecasts, expense allocation, partnership economics. Worked with legal. Presented to C-suite and developer.', result:'Analysis led to new long-term management contract replacing temporary arrangement. Demonstrated strategic financial modeling capability and ability to influence C-suite decisions with data-driven analysis.', talkingTime:'~2 min', followUps:['How did you convince both parties?','What assumptions were most critical?','How did you handle uncertainty in long-term forecasts?'] },
+  { id:'story-13', num:13, title:'Financial Presentations to Partners', tags:['collaboration','achievement'], summary:'Delivered monthly financial presentations to 15+ property partners, tailoring complex data for diverse audiences.', usableFor:['Stakeholder management and investor relations','Presenting to diverse audiences','Translating complex data for non-finance stakeholders','Executive communication'], situation:"Responsible for financial presentations to ~15 partners on bi-weekly to monthly cadence. Vastly different sophistication levels—from institutional investors to hotel operators.", task:'Consistently deliver high-quality presentations tailored to each audience while maintaining trust and proactively addressing issues.', action:"Segmented partners by sophistication and priorities. Built tailored templates per partner type. Emphasized storytelling over raw data—explaining why variances happened. Proactively surfaced issues with proposed solutions. Used PowerBI visuals for accessibility.", result:'Built strong trust-based relationships with all 15+ partners. Manager noted "written presentation skills" and ability to "distill complex information" in performance review. Partners felt "in the loop" and confident in financial management.', talkingTime:'~2 min', followUps:['How did you handle delivering bad news?','Example of tailoring to different audiences?','How did you build trust remotely?'] },
+  { id:'story-14', num:14, title:'Partner Deck Automation (PowerBI)', tags:['achievement','technical','initiative'], summary:'Reduced partner deck creation by 80% (4 hours to 45 minutes) via PowerBI-PowerPoint integration.', usableFor:['PowerBI expertise','Process automation','Training others on technology','Eliminating manual inefficiencies'], situation:'Offshore analysts spent 4+ hours monthly creating partner decks—painful manual process of copying charts, pasting, reformatting across 15+ decks.', task:'Eliminate manual inefficiency while maintaining professional look and feel.', action:"Researched PowerBI's PowerPoint integration. Built standardized dashboards with exact charts needed. Created templates with embedded live visuals that refresh with single click. Documented new process and trained offshore analysts.", result:'Reduced deck creation by 80%—from 4 hours to 45 minutes. Freed 3+ hours of analyst capacity monthly. Eliminated copy-paste errors. Demonstrated ability to identify inefficiencies and train others on new processes.', talkingTime:'~2 min', followUps:['Hardest part of integration?','How did you ensure data accuracy?','What other manual processes did you automate?'] },
+  { id:'story-15', num:15, title:'Prioritization Challenge', tags:['growth','weakness','learning','pressure'], summary:'Received performance review feedback about prioritization; implemented MS Planner and time-blocking; tangible improvement in H2 2024.', usableFor:["What's your greatest weakness?",'What feedback do you consistently receive?','What are you working to improve?','Tell me about receiving critical feedback','How do you handle competing priorities?'], situation:"Managing full portfolio of responsibilities at Placemakr. During 2024 performance review, manager gave direct feedback that during peak periods I sometimes struggled with prioritization—passion for systems-building occasionally pulled focus from core deliverables.", task:'Fundamentally improve prioritization during crunch times, ensuring systems-building passion never compromised timely delivery of essential financial reporting.', action:"Acknowledged valid feedback rather than getting defensive. Implemented MS Planner with urgent/important matrix. Started time-blocking calendar—first 10 days of each month exclusively for monthly close. Improved stakeholder communication about revised timelines. Leveraged offshore team more strategically during peak periods.", result:"Delivered 100% of monthly close packages on time July through December. Manager acknowledged progress in year-end check-in. Time-blocking became permanent. Learned that passion for improvement is a strength but must be channeled appropriately.", talkingTime:'~2:15', followUps:['How did you feel receiving this feedback?','Still working on this or fully resolved?','What would you do differently?'] },
+  { id:'story-16', num:16, title:'Maintenance Manager Morale Failure', tags:['failure','learning','leadership','growth','conflict'], summary:'Failed to recognize sole maintenance manager\'s achievements; led to blow-up and walkout; learned to balance execution with recognition.', usableFor:['Tell me about a time you failed','Mistake you made and what you learned','Project not going as planned','Receiving hard feedback','Conflict with a coworker','Management style'], situation:'As Property Manager at Bozzuto, managed lean team during aggressive lease-up. Maintenance team was one person responsible for all unit turns, work orders, vendor coordination.', task:'Manage all property operations including leading this lean team to execute lease-up plan while maintaining standards and morale.', action:"Operated with \"just get it done\" mentality. Continuously asked for more without pausing to recognize accomplishments. He snapped—\"Nothing I do is ever enough\"—and walked off shift.\n\nReached out that evening. Next morning, listened more than talked. Apologized directly. Changed behavior: started 1:1s with \"What are you proud of?\" Made sure leadership knew about his contributions publicly. Adjusted personal approach—recognizing that what works for me doesn't work for everyone.", result:"He came back. We rebuilt the relationship. Exceeded occupancy targets and pre-leased 42% of building. He told me months later the second half felt completely different.\n\nLesson: execution without recognition is unsustainable. This carried forward to Placemakr—made recognition a core part of managing offshore analysts.", talkingTime:'~2:30', followUps:['How did you know what to do differently?','Did this happen again?','What if he refused to come back?','How do you balance recognition with high standards?'] },
+  { id:'story-17', num:17, title:'Billing Discrepancy Partner Conflict', tags:['conflict','collaboration','communication','problem-solving'], summary:'Corrected retroactive partner billing; partner accused team of "hiding fees"; resolved via transparent communication and payment plan.', usableFor:['Difficult stakeholder','Delivering bad news','Customer/client complaint','Communicating financial information','Persuading someone'], situation:"Discovered contractual shared service fees hadn't been charged to partners due to billing oversight. Leadership decided to correct retroactively—back-billing for 6+ months of fees.", task:'Calculate amounts owed, communicate the correction, and collect fees while maintaining trust-based relationships.', action:"One partner reacted very negatively—called CFO, accused team of \"hiding fees,\" threatened legal. I didn't respond defensively. Scheduled a call, acknowledged his perspective, walked through contract language transparently. Proposed payment plan spreading $15K across six months. Got CFO approval. Committed to proactive communication. Implemented monthly billing reconciliation checklist.", result:"He accepted payment plan. Collected full amount. Preserved partnership. He later said he appreciated how I handled it.\n\nUpdated protocol: retroactive corrections over $5K now require advance partner notification. Learned that being contractually right doesn't mean you're managing the relationship correctly.", talkingTime:'~2:20', followUps:['Why did the partner react so strongly?','Did you have authority for the payment plan?','What if he still threatened legal action?'] },
+];
+
+const OPENING_NARRATIVES = [
+  { id:'tell-me', title:'Tell Me About Yourself', targetTime:120, content:"Most recently, I spent 3+ years as Senior Analyst of Asset Management at Placemakr, where I owned financial reporting for our ~15-property portfolio.\n\nBeyond my core analyst duties, my real lasting impact was that of a systems architect who built scalable financial infrastructure used by the entire organization. Flagship achievements included:\n\u2022 Built a USALI mapping framework that allowed our multifamily accounting system to generate reports in standard USALI format\n\u2022 Built portfolio-wide KPI dashboard that merged siloed data from various systems to become the SSOT for the entire company\n\u2022 Led annual budget process for entire portfolio which included GM training and ground-up development of an all-new custom budget model\n\nBefore Placemakr, I spent 5 years at Bozzuto in property management, progressing from Leasing Consultant to General Manager, which gave me the operational foundation that makes me an effective bridge between ops and finance.\n\nLooking to the future, I've always liked working in high growth environments. What excites me about Kasa is your positioning as an AI-driven operator along with the Mint House integration timing — you're bringing on ~1,000 units right now, and you need someone who's built scalable systems before and understands flex-living operations from the ground up.\n\nI see this as a natural progression: I went from managing properties to building the finance infrastructure that supports them at scale. The offshore team management and regional stakeholder relationships are familiar territory. This feels like the right next step." },
+  { id:'why-kasa', title:'Why Kasa?', targetTime:90, content:"I've been following Kasa's trajectory closely, and three things caught my attention:\n\n1. Brand — explicit positioning as forward-thinking, tech-enabled hospitality operators with AI-driven decision-making. I'm not just comfortable with technology — I actively seek out cutting-edge tools.\n\n2. Model — Kasa succeeding while competitors like Sonder failed. Your management contract model versus risky master leases shows discipline. The $40M Silver Lake investment signals strong institutional confidence.\n\n3. Mint House merger — integrating ~1,000 units to become the largest U.S. apartment hotel operator. I've built USALI reporting infrastructure for a hospitality portfolio before — I know exactly what that integration requires: standardizing chart of accounts, training property teams, building automated reporting that scales." },
+  { id:'why-leave', title:'Why Did You Leave Placemakr?', targetTime:60, content:"Placemakr went through significant organizational changes starting in late 2024. My boss, the VP of Asset Management, was let go, which essentially eliminated our 3-person asset management department. I transitioned to the Investments team focusing on owned assets.\n\n2024-2025 had extremely low CRE transaction volume due to the rate environment — the investments team struggled with acquisitions while selling off owned properties. In April 2025, that team was also restructured.\n\nSince then, I've been focused on my own real estate investing — making capex upgrades to my rental portfolio and evaluating new acquisitions. I also intentionally took time to deepen my AI expertise.\n\nI've been extremely selective about my next career move, but when I saw this role along with the Mint House merger announcement, the timing felt perfect — this is exactly the kind of high-impact financial integration project I want to tackle next." },
+];
+
+const QUESTIONS_DATA = [
+  {id:'q-1',num:1,category:'Opening',question:'Tell me about yourself',primary:'Elevator Pitch',alternate:'N/A',coverage:'strong'},{id:'q-2',num:2,category:'Opening',question:'Walk me through your resume',primary:'Resume narrative',alternate:'N/A',coverage:'strong'},{id:'q-3',num:3,category:'Opening',question:'Why are you interested in this role?',primary:'Tailored per company',alternate:'N/A',coverage:'strong'},{id:'q-4',num:4,category:'Opening',question:'Why are you leaving your current position?',primary:'Placemakr transition',alternate:'N/A',coverage:'strong'},{id:'q-5',num:5,category:'Opening',question:'What do you know about our company?',primary:'Company research',alternate:'N/A',coverage:'strong'},{id:'q-6',num:6,category:'Opening',question:'Why do you want to work here?',primary:'Tailored per company',alternate:'N/A',coverage:'strong'},{id:'q-7',num:7,category:'Opening',question:'Where do you see yourself in 5 years?',primary:'Career progression narrative',alternate:'N/A',coverage:'strong'},{id:'q-8',num:8,category:'Opening',question:'What are you looking for in your next role?',primary:'Role criteria',alternate:'N/A',coverage:'strong'},
+  {id:'q-9',num:9,category:'Leadership',question:'Tell me about a time you led a team',primary:'Offshore Analyst Management',alternate:'Annual Budget Process',coverage:'strong'},{id:'q-10',num:10,category:'Leadership',question:'Led without formal authority',primary:'Annual Budget Process',alternate:'57% Faster Monthly Close',coverage:'strong'},{id:'q-11',num:11,category:'Leadership',question:'Difficult decision',primary:'$600K Delinquency Recovery',alternate:'Columbia Flex-Use Scenario',coverage:'strong'},{id:'q-12',num:12,category:'Leadership',question:'Delegated effectively',primary:'Offshore Analyst Management',alternate:'Partner Deck Automation',coverage:'strong'},{id:'q-13',num:13,category:'Leadership',question:'Mentored or developed someone',primary:'Offshore Analyst Management',alternate:'',coverage:'partial'},{id:'q-14',num:14,category:'Leadership',question:'Motivated a struggling team',primary:'',alternate:'Offshore Analyst Management (adapt)',coverage:'gap'},{id:'q-15',num:15,category:'Leadership',question:'Took charge in unstructured situation',primary:'USALI Conversion Framework',alternate:'Portfolio KPI Dashboard',coverage:'strong'},{id:'q-16',num:16,category:'Leadership',question:'Led through change',primary:'57% Faster Monthly Close',alternate:'USALI Conversion Framework',coverage:'strong'},
+  {id:'q-17',num:17,category:'Conflict',question:'Conflict with coworker',primary:'Billing Discrepancy Partner Conflict',alternate:'Maintenance Manager Morale Failure',coverage:'strong'},{id:'q-18',num:18,category:'Conflict',question:'Disagreed with your manager',primary:'Billing Discrepancy (adapt)',alternate:'',coverage:'partial'},{id:'q-19',num:19,category:'Conflict',question:'Difficult stakeholder',primary:'Billing Discrepancy Partner Conflict',alternate:'Financial Presentations to Partners',coverage:'strong'},{id:'q-20',num:20,category:'Conflict',question:'Received critical feedback',primary:'Prioritization Challenge',alternate:'Maintenance Manager Morale Failure',coverage:'strong'},{id:'q-21',num:21,category:'Conflict',question:'Delivered bad news',primary:'Billing Discrepancy Partner Conflict',alternate:'Financial Presentations to Partners',coverage:'strong'},{id:'q-22',num:22,category:'Conflict',question:'Team member not pulling weight',primary:'Maintenance Manager Morale Failure',alternate:'Offshore Analyst Management (adapt)',coverage:'strong'},{id:'q-23',num:23,category:'Conflict',question:'Navigating office politics',primary:'',alternate:'',coverage:'gap'},{id:'q-24',num:24,category:'Conflict',question:'Customer/client complaint',primary:'Billing Discrepancy Partner Conflict',alternate:'Financial Presentations (adapt)',coverage:'strong'},
+  {id:'q-25',num:25,category:'Failure',question:'Tell me about a time you failed',primary:'Maintenance Manager Morale Failure',alternate:'Billing Discrepancy Conflict',coverage:'strong'},{id:'q-26',num:26,category:'Failure',question:'Mistake you made and learned from',primary:'Maintenance Manager Morale Failure',alternate:'Prioritization Challenge',coverage:'strong'},{id:'q-27',num:27,category:'Failure',question:"Project didn't go as planned",primary:'57% Faster Monthly Close',alternate:'Maintenance Manager Morale Failure',coverage:'strong'},{id:'q-28',num:28,category:'Failure',question:'Missed a deadline',primary:'Prioritization Challenge',alternate:'',coverage:'partial'},{id:'q-29',num:29,category:'Failure',question:"Goal you didn't achieve",primary:'Maintenance Manager Morale Failure',alternate:'',coverage:'partial'},{id:'q-30',num:30,category:'Failure',question:'Had to admit you were wrong',primary:'Maintenance Manager Morale Failure',alternate:'Billing Discrepancy Conflict',coverage:'strong'},{id:'q-31',num:31,category:'Failure',question:'Feedback hard to hear',primary:'Prioritization Challenge',alternate:'Maintenance Manager Morale Failure',coverage:'strong'},{id:'q-32',num:32,category:'Failure',question:'Had to change your approach',primary:'Prioritization Challenge',alternate:'57% Faster Monthly Close',coverage:'strong'},
+  {id:'q-33',num:33,category:'Achievement',question:'Greatest professional achievement',primary:'USALI Conversion Framework',alternate:'AI Laundry / KPI Dashboard',coverage:'strong'},{id:'q-34',num:34,category:'Achievement',question:'Exceeded expectations',primary:'41% GPR Growth & 34% NOI Beat',alternate:'USALI Conversion',coverage:'strong'},{id:'q-35',num:35,category:'Achievement',question:'Biggest impact at last job',primary:'Portfolio KPI Dashboard',alternate:'USALI / Budget Process',coverage:'strong'},{id:'q-36',num:36,category:'Achievement',question:'Gone above and beyond',primary:'AI Laundry Analysis',alternate:'Early AI Chatbot',coverage:'strong'},{id:'q-37',num:37,category:'Achievement',question:'Goal you achieved',primary:'Annual Budget Process',alternate:'57% Faster Monthly Close',coverage:'strong'},{id:'q-38',num:38,category:'Achievement',question:'Project particularly proud of',primary:'USALI Conversion Framework',alternate:'Proprietary Budget Model',coverage:'strong'},{id:'q-39',num:39,category:'Achievement',question:'Delivered ahead of schedule',primary:'AI Laundry Analysis',alternate:'',coverage:'strong'},{id:'q-40',num:40,category:'Achievement',question:'Received recognition',primary:'Portfolio KPI Dashboard',alternate:'Performance Review',coverage:'strong'},
+  {id:'q-41',num:41,category:'Problem-Solving',question:'Approach to new problem',primary:'$600K Delinquency Recovery',alternate:'AI Laundry Analysis',coverage:'strong'},{id:'q-42',num:42,category:'Problem-Solving',question:'Complex problem solved',primary:'AI Laundry Analysis',alternate:'USALI Conversion',coverage:'strong'},{id:'q-43',num:43,category:'Problem-Solving',question:'Decision with incomplete info',primary:'Columbia Flex-Use Scenario',alternate:'$600K Delinquency',coverage:'strong'},{id:'q-44',num:44,category:'Problem-Solving',question:'Identified problem before others',primary:'$600K Delinquency Recovery',alternate:'HPOR Tracker',coverage:'strong'},{id:'q-45',num:45,category:'Problem-Solving',question:'Innovative solution',primary:'AI Laundry Analysis',alternate:'Early AI Chatbot',coverage:'strong'},{id:'q-46',num:46,category:'Problem-Solving',question:'Handled ambiguity',primary:'USALI Conversion Framework',alternate:'Columbia Flex-Use',coverage:'strong'},{id:'q-47',num:47,category:'Problem-Solving',question:'Debugging difficult issue',primary:'$600K Delinquency Recovery',alternate:'',coverage:'partial'},{id:'q-48',num:48,category:'Problem-Solving',question:'Creative thinking',primary:'AI Laundry Analysis',alternate:'',coverage:'strong'},
+  {id:'q-49',num:49,category:'Collaboration',question:'Ideal team environment',primary:'Values/preferences',alternate:'',coverage:'strong'},{id:'q-50',num:50,category:'Collaboration',question:'Cross-functional team',primary:'Annual Budget Process',alternate:'57% Faster Monthly Close',coverage:'strong'},{id:'q-51',num:51,category:'Collaboration',question:'Built relationships with new teammates',primary:'Offshore Analyst Management',alternate:'Financial Presentations',coverage:'strong'},{id:'q-52',num:52,category:'Collaboration',question:'Relied on others to get work done',primary:'Annual Budget Process',alternate:'$600K Delinquency',coverage:'strong'},{id:'q-53',num:53,category:'Collaboration',question:'Remote team collaboration',primary:'Offshore Analyst Management',alternate:'Partner Deck Automation',coverage:'strong'},{id:'q-54',num:54,category:'Collaboration',question:'Helped colleague succeed',primary:'Offshore Analyst Management',alternate:'',coverage:'partial'},{id:'q-55',num:55,category:'Collaboration',question:'Worked with someone different from you',primary:'Offshore Analyst Management',alternate:'Financial Presentations',coverage:'strong'},{id:'q-56',num:56,category:'Collaboration',question:"Working with people you don't like",primary:'',alternate:'',coverage:'gap'},
+  {id:'q-57',num:57,category:'Initiative',question:'Took initiative',primary:'Portfolio KPI Dashboard',alternate:'USALI Conversion',coverage:'strong'},{id:'q-58',num:58,category:'Initiative',question:'Project started on your own',primary:'AI Laundry Analysis',alternate:'Early AI Chatbot',coverage:'strong'},{id:'q-59',num:59,category:'Initiative',question:'Pushed for something you believed in',primary:'57% Faster Monthly Close',alternate:'USALI Conversion',coverage:'strong'},{id:'q-60',num:60,category:'Initiative',question:'Beyond job description',primary:'AI Laundry Analysis',alternate:'KPI Dashboard',coverage:'strong'},{id:'q-61',num:61,category:'Initiative',question:'Learning something new',primary:'USALI Conversion Framework',alternate:'AI Laundry Analysis',coverage:'strong'},{id:'q-62',num:62,category:'Initiative',question:'Identified opportunity others missed',primary:'$600K Delinquency Recovery',alternate:'HPOR Tracker',coverage:'strong'},{id:'q-63',num:63,category:'Initiative',question:'Proposed new idea/process',primary:'Portfolio KPI Dashboard',alternate:'Partner Deck Automation',coverage:'strong'},{id:'q-64',num:64,category:'Initiative',question:'Calculated risk',primary:'Columbia Flex-Use Scenario',alternate:'Early AI Chatbot',coverage:'strong'},
+  {id:'q-65',num:65,category:'Communication',question:'Presenting to senior leadership',primary:'Financial Presentations',alternate:'Columbia Flex-Use',coverage:'strong'},{id:'q-66',num:66,category:'Communication',question:'Explaining technical to non-technical',primary:'Financial Presentations',alternate:'USALI training for GMs',coverage:'strong'},{id:'q-67',num:67,category:'Communication',question:'Persuading someone',primary:'57% Faster Monthly Close',alternate:'Columbia Flex-Use',coverage:'strong'},{id:'q-68',num:68,category:'Communication',question:'Giving constructive feedback',primary:'Offshore Analyst Management',alternate:'',coverage:'partial'},{id:'q-69',num:69,category:'Communication',question:'Writing important document',primary:'Annual Budget Process (SOP)',alternate:'Columbia Flex-Use',coverage:'strong'},{id:'q-70',num:70,category:'Communication',question:'Handled miscommunication',primary:'',alternate:'',coverage:'gap'},{id:'q-71',num:71,category:'Communication',question:'Facilitating difficult meeting',primary:'Annual Budget Process',alternate:'57% Faster Monthly Close',coverage:'strong'},{id:'q-72',num:72,category:'Communication',question:'Adjusted communication style',primary:'Financial Presentations',alternate:'Offshore Analyst Management',coverage:'strong'},
+  {id:'q-73',num:73,category:'For Managers',question:'Approach to hiring',primary:'',alternate:'',coverage:'gap'},{id:'q-74',num:74,category:'For Managers',question:'Management style',primary:'Offshore Analyst Management',alternate:'',coverage:'partial'},{id:'q-75',num:75,category:'For Managers',question:'Giving feedback to team',primary:'Offshore Analyst Management',alternate:'',coverage:'partial'},{id:'q-76',num:76,category:'For Managers',question:'Performance managing someone out',primary:'',alternate:'',coverage:'gap'},{id:'q-77',num:77,category:'For Managers',question:"High performer who's difficult",primary:'',alternate:'',coverage:'gap'},{id:'q-78',num:78,category:'For Managers',question:'Building team from scratch',primary:'',alternate:'',coverage:'gap'},{id:'q-79',num:79,category:'For Managers',question:"Prioritizing team's work",primary:'Annual Budget Process',alternate:'',coverage:'partial'},{id:'q-80',num:80,category:'For Managers',question:'Developing direct reports',primary:'Offshore Analyst Management',alternate:'',coverage:'partial'},
+  {id:'q-81',num:81,category:'For ICs',question:'Prioritize your work',primary:'57% Faster Monthly Close',alternate:'Annual Budget Process',coverage:'strong'},{id:'q-82',num:82,category:'For ICs',question:'Multiple competing deadlines',primary:'57% Faster Monthly Close',alternate:'Annual Budget Process',coverage:'strong'},{id:'q-83',num:83,category:'For ICs',question:'Stay current in your field',primary:'AI Laundry + Early AI Chatbot',alternate:'',coverage:'strong'},{id:'q-84',num:84,category:'For ICs',question:'Owning project end-to-end',primary:'USALI Conversion Framework',alternate:'KPI Dashboard',coverage:'strong'},{id:'q-85',num:85,category:'For ICs',question:'Handle interruptions',primary:'57% Faster Monthly Close',alternate:'',coverage:'partial'},{id:'q-86',num:86,category:'For ICs',question:'Working independently',primary:'USALI Conversion Framework',alternate:'AI Laundry Analysis',coverage:'strong'},{id:'q-87',num:87,category:'For ICs',question:'Disagreed but committed anyway',primary:'',alternate:'Annual Budget Process',coverage:'adaptable'},{id:'q-88',num:88,category:'For ICs',question:'Measure your own success',primary:'Portfolio KPI Dashboard',alternate:'Performance Review',coverage:'strong'},
+  {id:'q-89',num:89,category:'Technical',question:'Approach to USALI/hospitality accounting',primary:'USALI Conversion Framework',alternate:'',coverage:'strong'},{id:'q-90',num:90,category:'Technical',question:'Stay updated on AI/PropTech',primary:'AI Laundry + Early AI Chatbot',alternate:'',coverage:'strong'},{id:'q-91',num:91,category:'Technical',question:'Technical trade-off you made',primary:'Proprietary Budget Model',alternate:'Partner Deck Automation',coverage:'strong'},{id:'q-92',num:92,category:'Technical',question:'Ensure quality in your work',primary:'USALI Conversion Framework',alternate:'Offshore Analyst Management',coverage:'strong'},{id:'q-93',num:93,category:'Technical',question:'Budget forecasting approach',primary:'Annual Budget Process',alternate:'Proprietary Budget Model',coverage:'strong'},{id:'q-94',num:94,category:'Technical',question:'Cash flow forecasting',primary:'Columbia Flex-Use Scenario',alternate:'$600K Delinquency',coverage:'strong'},{id:'q-95',num:95,category:'Technical',question:'Revenue management',primary:'41% GPR Growth',alternate:'HPOR Tracker',coverage:'strong'},{id:'q-96',num:96,category:'Technical',question:'Portfolio-level analysis',primary:'Portfolio KPI Dashboard',alternate:'Financial Presentations',coverage:'strong'},
+  {id:'q-97',num:97,category:'Weakness/Growth',question:'Greatest weakness',primary:'Prioritization Challenge',alternate:'Maintenance Manager Failure',coverage:'strong'},{id:'q-98',num:98,category:'Weakness/Growth',question:'Feedback you consistently receive',primary:'Prioritization Challenge',alternate:'Maintenance Manager Failure',coverage:'strong'},{id:'q-99',num:99,category:'Weakness/Growth',question:'What are you working to improve',primary:'Prioritization Challenge',alternate:'',coverage:'strong'},{id:'q-100',num:100,category:'Weakness/Growth',question:'What manager would say about growth',primary:'Prioritization Challenge',alternate:'',coverage:'strong'},
+  {id:'q-101',num:101,category:'Gaps/Concerns',question:'Gap in employment',primary:'Placemakr transition narrative',alternate:'',coverage:'strong'},{id:'q-102',num:102,category:'Gaps/Concerns',question:'Left job after short time',primary:'Opportunity alignment',alternate:'',coverage:'strong'},{id:'q-103',num:103,category:'Gaps/Concerns',question:'Changing industries',primary:'Multifamily \u2192 Hospitality = same industry',alternate:'',coverage:'strong'},{id:'q-104',num:104,category:'Gaps/Concerns',question:'Qualified despite lacking [X]',primary:'Self-teaching track record',alternate:'',coverage:'strong'},{id:'q-105',num:105,category:'Gaps/Concerns',question:'Hire you over more experienced',primary:'AI-native + USALI + offshore = rare combo',alternate:'',coverage:'strong'},
+  {id:'q-106',num:106,category:'Hypotheticals',question:'First 90 days',primary:'Mint House integration plan',alternate:'',coverage:'strong'},{id:'q-107',num:107,category:'Hypotheticals',question:'How approach specific scenario',primary:'Use relevant story as framework',alternate:'',coverage:'strong'},{id:'q-108',num:108,category:'Hypotheticals',question:'Choose between A and B',primary:'Judgment framework, cite examples',alternate:'',coverage:'strong'},{id:'q-109',num:109,category:'Hypotheticals',question:'Handle conflict scenario',primary:'Financial Presentations',alternate:'',coverage:'partial'},{id:'q-110',num:110,category:'Hypotheticals',question:'Disagree with company decision',primary:'Annual Budget Process',alternate:'',coverage:'adaptable'},
+];
+
+const QUESTION_CATEGORIES = [...new Set(QUESTIONS_DATA.map(q => q.category))];
+
+const QUESTIONS_TO_ASK = [
+  {id:'qa-1',category:'Role Understanding',text:"Can you walk me through how Kasa is approaching the Mint House integration from a finance perspective? What are the biggest challenges you're anticipating?",why:'Shows strategic thinking'},
+  {id:'qa-2',category:'Role Understanding',text:'What does success look like in this role in the first 6 months vs. the first year?',why:'Understand expectations'},
+  {id:'qa-3',category:'Role Understanding',text:'How is the finance team structured, especially with the offshore teams? What would my day-to-day collaboration look like?',why:'Clarifies team dynamics'},
+  {id:'qa-4',category:'Process & Systems',text:'What financial systems and tools does the team use beyond NetSuite? How integrated are they?',why:'Understand technical environment'},
+  {id:'qa-5',category:'Process & Systems',text:"How does Kasa's finance function partner with operations and asset management?",why:'Cross-functional dynamics'},
+  {id:'qa-6',category:'Growth & Culture',text:"You've been with Kasa for several years. What's kept you here, and how has the finance team evolved?",why:'Culture, trajectory, retention'},
+  {id:'qa-7',category:'Growth & Culture',text:'What opportunities exist to contribute beyond monthly reporting—process improvement, strategic initiatives, technology implementation?',why:'Shows ambition for impact'},
+  {id:'qa-8',category:'Closer',text:'Based on our conversation, is there anything about my background that gives you pause or that I can clarify further?',why:'Address concerns directly'},
+];
+
+const TALKING_POINTS = [
+  {title:'AI-Native Systems Architect',message:"I don't just tolerate technology—I actively seek cutting-edge tools before they're mainstream.",whenToUse:['Process improvement: "My first instinct is \'can technology solve this?\'"','Culture fit: "Your AI-driven approach is exactly why I\'m here"','Professional development: "I actively test new tools"'],evidence:['Gemini 2.5 Pro within days of release, $75K savings','PowerBI automation, 80% time savings','Self-taught complex systems without formal training']},
+  {title:'Scalable Infrastructure Builder',message:'I build systems that scale without breaking and without adding headcount.',whenToUse:['Mint House integration: "I\'ve built systems that scaled when portfolio doubled"','Workload: "I build systems that handle volume increases"','First 90 days: "Focus on infrastructure that scales beyond 30 properties"'],evidence:['USALI framework scaled from 15 to 30+ properties','Monthly close handled portfolio doubling','KPI dashboard used by 200+ employees']},
+  {title:'USALI Expert Who Self-Taught',message:"Deep USALI expertise most candidates won't have, gained through self-directed learning.",whenToUse:['Opening: "One thing that differentiates me is USALI expertise"','Hospitality accounting discussions','Mint House: "USALI conversion will be critical"'],evidence:['Self-taught USALI 11th edition cover-to-cover','Built framework for 15+ properties','Trained teams on USALI standards']},
+  {title:"Operator's Mindset in Finance",message:'I bridge finance and operations—I understand property-level realities.',whenToUse:['Stakeholder management: "I speak operations language"','Property visits: "You can\'t understand performance without seeing the asset"','Communication: "My Bozzuto background makes finance useful for operations"'],evidence:['5+ years property management before asset management','On-site property visits during onboarding','Performance review praised communication skills']},
+];
+
+const CONCERNS = [
+  {title:'NetSuite Experience Gap',content:"Be transparent. Extensive Yardi experience (both ERPs). Self-teaching track record: USALI, PowerBI, Gemini 2.5 Pro. Offer to self-study before start date."},
+  {title:'Employment Gap (April 2025–Present)',content:'Brief and positive. Not performance-related. Productive use of time (rental portfolio, AI upskilling). Forward-looking. Never say "unemployed" or "looking for X months."'},
+  {title:'Prioritization Growth Area',content:'DO NOT raise proactively. Only if asked about weaknesses. Acknowledge, describe specific improvements (MS Planner, time blocking), show manager acknowledged progress H2 2024.'},
+  {title:'Portfolio Size Jump (15 → 30)',content:'"I managed 15 properties directly but built infrastructure designed to scale." "When portfolio doubled, my systems handled it." "I\'d have offshore teams, FuJu\'s guidance, and Kasa\'s existing infrastructure."'},
+];
+
+const CHECKLIST_ITEMS = [
+  {id:'cl-1',timeframe:'1 Week Before',text:'Review prep guide thoroughly (READ MULTIPLE TIMES)'},{id:'cl-2',timeframe:'1 Week Before',text:'Practice TOP 8 STAR stories out loud'},{id:'cl-3',timeframe:'1 Week Before',text:'Record yourself telling "Tell me about yourself"'},{id:'cl-4',timeframe:'1 Week Before',text:'Research FuJu Chung on LinkedIn'},{id:'cl-5',timeframe:'1 Week Before',text:'Review Kasa website and recent press releases'},{id:'cl-6',timeframe:'1 Week Before',text:'Prepare your questions for interviewer'},
+  {id:'cl-7',timeframe:'2–3 Days Before',text:'Practice answers to top 10 likely questions'},{id:'cl-8',timeframe:'2–3 Days Before',text:'Review your resume—be ready to discuss any item'},{id:'cl-9',timeframe:'2–3 Days Before',text:'Test video technology'},{id:'cl-10',timeframe:'2–3 Days Before',text:'Prepare quiet interview space'},{id:'cl-11',timeframe:'2–3 Days Before',text:'Check for any Kasa news in last 48 hours'},
+  {id:'cl-12',timeframe:'Day Before',text:'Final review of key STAR stories'},{id:'cl-13',timeframe:'Day Before',text:'Review Mint House merger details'},{id:'cl-14',timeframe:'Day Before',text:'Print prep guide for reference'},{id:'cl-15',timeframe:'Day Before',text:'Get good sleep'},{id:'cl-16',timeframe:'Day Before',text:'Prepare professional outfit'},
+  {id:'cl-17',timeframe:'Day Of',text:'Review talking points 30 min before'},{id:'cl-18',timeframe:'Day Of',text:'Login 10 minutes early'},{id:'cl-19',timeframe:'Day Of',text:'Prep guide + resume + Achievement Bank on second monitor'},{id:'cl-20',timeframe:'Day Of',text:'Water nearby, phone on silent'},{id:'cl-21',timeframe:'Day Of',text:'Take 3 deep breaths'},
+];
+
+const THANK_YOU = `Dear FuJu,
+
+Thank you for taking the time to speak with me today about the Property Portfolio Finance Manager position. I particularly enjoyed our discussion about [specific topic—Mint House integration timeline, offshore team structure, etc.].
+
+Our conversation reinforced my enthusiasm for the role and Kasa's trajectory. My experience building USALI infrastructure and managing offshore analysts at Placemakr aligns directly with the financial integration challenges Kasa is navigating with the Mint House merger. I'm excited about the opportunity to contribute to your AI-powered operational approach and help scale financial reporting as the portfolio continues to grow.
+
+Please let me know if you need any additional information. I look forward to hearing about next steps.
+
+Best regards,
+Eric Zdanowski
+(203) 592-8457
+ezdanowski@gmail.com`;
+
+// ===== HOOKS =====
+
+function useLS(key, init) {
+  const [v, setV] = useState(() => { try { const s = localStorage.getItem(key); return s ? JSON.parse(s) : init; } catch { return init; } });
+  useEffect(() => { try { localStorage.setItem(key, JSON.stringify(v)); } catch {} }, [key, v]);
+  return [v, setV];
+}
+
+function useTimer() {
+  const [sec, setSec] = useState(0);
+  const [on, setOn] = useState(false);
+  const r = useRef(null);
+  useEffect(() => { if (on) r.current = setInterval(() => setSec(s=>s+1), 1000); else clearInterval(r.current); return () => clearInterval(r.current); }, [on]);
+  return { sec, on, start:()=>{setSec(0);setOn(true)}, stop:()=>setOn(false), reset:()=>{setOn(false);setSec(0)}, fmt:`${Math.floor(sec/60)}:${(sec%60).toString().padStart(2,'0')}` };
+}
+
+// ===== COMPONENTS =====
+
+function TabNav({active, onChange}) {
+  const tabs = [{k:'opening',l:'Opening',i:'◉'},{k:'star',l:'STAR Stories',i:'✦'},{k:'drill',l:'Q&A Drill',i:'◎'},{k:'ask',l:'Ask Them',i:'→'},{k:'points',l:'Talking Points',i:'≡'},{k:'checklist',l:'Checklist',i:'✓'}];
+  return <div className="tab-nav">{tabs.map(t => <button key={t.k} className={`tab-btn ${active===t.k?'active':''}`} onClick={()=>onChange(t.k)}><span className="tab-icon">{t.i}</span>{t.l}</button>)}</div>;
+}
+
+// Tab 1
+function OpeningTab({data, edits, onEdit}) {
+  const [open, setOpen] = useState({});
+  const timer = useTimer();
+  const [activeId, setActiveId] = useState(null);
+  const toggle = id => setOpen(p=>({...p,[id]:!p[id]}));
+  const getC = n => edits[n.id]||n.content;
+
+  return <div className="fade-up">
+    <h2 className="section-title">Opening Narratives</h2>
+    <p className="section-sub">Memorize these word-for-word. Click to expand, edit inline, practice with timer.</p>
+    {timer.on && <div className="card card-glow fade-in" style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:16}}>
+      <div><span className="timer-display">{timer.fmt}</span><span className="timer-target" style={{marginLeft:12}}>target {data.find(n=>n.id===activeId)?.targetTime>=60 ? Math.floor(data.find(n=>n.id===activeId).targetTime/60)+':'+((data.find(n=>n.id===activeId).targetTime%60)||'00').toString().padStart(2,'0') : ''}</span></div>
+      <button className="btn" onClick={timer.stop}>Stop</button>
+    </div>}
+    {data.map((n,i) => <div key={n.id} className={`card fade-up stagger-${i+1}`}>
+      <button className="expand-trigger" onClick={()=>toggle(n.id)}>
+        <div><h3 style={{fontFamily:'var(--serif)',fontSize:'1.15rem',fontWeight:400,color:'var(--text)'}}>{n.title}</h3><span style={{fontSize:'.75rem',color:'var(--text-dim)',fontFamily:'var(--mono)'}}>target {n.targetTime>=60?Math.floor(n.targetTime/60)+' min':''}{ n.targetTime%60 ? ' '+n.targetTime%60+'s':''}</span></div>
+        <span className={`expand-arrow ${open[n.id]?'open':''}`}>▼</span>
+      </button>
+      {open[n.id] && <div className="expand-body fade-in">
+        <textarea className="edit-area" rows={getC(n).split('\n').length+2} value={getC(n)} onChange={e=>onEdit(p=>({...p,[n.id]:e.target.value}))} />
+        <div style={{marginTop:12}}><button className="btn btn-gold" onClick={()=>{setActiveId(n.id);timer.start()}}>Practice with Timer</button></div>
+      </div>}
+    </div>)}
+  </div>;
+}
+
+// Tab 2
+function StarTab({stories, sd, onSd}) {
+  const [idx, setIdx] = useState(0);
+  const [rev, setRev] = useState({});
+  const [tagF, setTagF] = useState('all');
+  const [confF, setConfF] = useState('all');
+  const [shuf, setShuf] = useState(false);
+  const [order, setOrder] = useState(stories.map((_,i)=>i));
+  const [sessionOn, setSessionOn] = useState(false);
+  const timer = useTimer();
+  const [editing, setEditing] = useState(null);
+  const allTags = [...new Set(stories.flatMap(s=>s.tags))].sort();
+
+  const filtered = useMemo(()=>{
+    let r=[...order];
+    if(tagF!=='all') r=r.filter(i=>stories[i].tags.includes(tagF));
+    if(confF!=='all'){const t=parseInt(confF);r=r.filter(i=>(sd[stories[i].id]?.confidence||0)===t);}
+    return r;
+  },[order,tagF,confF,stories,sd]);
+
+  const shuffle=()=>{const a=[...order];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}setOrder(a);setShuf(true);setIdx(0);setRev({});};
+  const unshuffle=()=>{setOrder(stories.map((_,i)=>i));setShuf(false);setIdx(0);};
+
+  const ci=filtered[idx]; const story=ci!==undefined?stories[ci]:null;
+  const d=story?(sd[story.id]||{}):{};
+  const setConf=l=>{if(!story)return;const now=new Date().toISOString().split('T')[0];onSd(p=>({...p,[story.id]:{...(p[story.id]||{}),confidence:l,practiceCount:((p[story.id]||{}).practiceCount||0)+1,lastPracticed:now}}));};
+  const revealS=s=>{if(!story)return;setRev(p=>({...p,[`${story.id}-${s}`]:true}));};
+  const revealAll=()=>['situation','task','action','result'].forEach(revealS);
+  const isRev=s=>story&&rev[`${story.id}-${s}`];
+  const getET=(s)=>sd[story?.id]?.edits?.[s]||story?.[s]||'';
+  const saveEdit=(s,t)=>{if(!story)return;onSd(p=>({...p,[story.id]:{...(p[story.id]||{}),edits:{...((p[story.id]||{}).edits||{}),[s]:t}}}));setEditing(null);};
+  const nav=dir=>{setIdx(i=>{const n=i+dir;if(n<0)return filtered.length-1;if(n>=filtered.length)return 0;return n;});setRev({});};
+  const startSession=()=>{shuffle();setSessionOn(true);setIdx(0);setRev({});timer.start();};
+
+  const confData=[{l:1,label:'Need Work',cls:'conf-red'},{l:2,label:'Getting There',cls:'conf-yellow'},{l:3,label:'Nailed It',cls:'conf-green'}];
+  const starSections=[{k:'situation',letter:'S',label:'Situation'},{k:'task',letter:'T',label:'Task'},{k:'action',letter:'A',label:'Action'},{k:'result',letter:'R',label:'Result'}];
+
+  if(!story) return <div style={{textAlign:'center',color:'var(--text-dim)',padding:'48px 0'}}>No stories match current filters.</div>;
+
+  return <div className="fade-up">
+    <div style={{display:'flex',flexWrap:'wrap',alignItems:'center',justifyContent:'space-between',marginBottom:16,gap:12}}>
+      <h2 className="section-title">STAR Stories</h2>
+      {!sessionOn ? <button className="btn btn-gold" onClick={startSession}>Start Practice Session</button>
+       : <div style={{display:'flex',alignItems:'center',gap:12}}>
+          <span className="timer-display" style={{fontSize:'1.4rem'}}>{timer.fmt}</span>
+          <span className="timer-target">target 2:00</span>
+          <button className="btn" onClick={()=>{setSessionOn(false);timer.stop();}}>End</button>
+        </div>}
+    </div>
+
+    <div style={{display:'flex',flexWrap:'wrap',gap:8,marginBottom:20}}>
+      <select className="select-input" value={tagF} onChange={e=>{setTagF(e.target.value);setIdx(0);}}>
+        <option value="all">All Tags</option>{allTags.map(t=><option key={t} value={t}>#{t}</option>)}
+      </select>
+      <select className="select-input" value={confF} onChange={e=>{setConfF(e.target.value);setIdx(0);}}>
+        <option value="all">All Confidence</option><option value="0">Unrated</option><option value="1">Need Work</option><option value="2">Getting There</option><option value="3">Nailed It</option>
+      </select>
+      <button className={`btn btn-sm ${shuf?'':''}` } onClick={shuf?unshuffle:shuffle} style={shuf?{borderColor:'var(--gold-dim)',color:'var(--gold)'}:{}}>{shuf?'Unshuffle':'Shuffle'}</button>
+    </div>
+
+    <div className="card fade-in" style={{maxWidth:720,margin:'0 auto'}}>
+      {/* Header */}
+      <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',marginBottom:12}}>
+        <div>
+          <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:8}}>
+            <span style={{fontFamily:'var(--mono)',fontSize:'.72rem',color:'var(--text-dim)',background:'var(--bg)',padding:'3px 8px',borderRadius:4,border:'1px solid var(--border)'}}>#{story.num}</span>
+            {d.confidence>0 && <span className={`badge badge-${d.confidence===1?'gap':d.confidence===2?'partial':'strong'}`}>{confData.find(c=>c.l===d.confidence)?.label}</span>}
+          </div>
+          <h3 style={{fontFamily:'var(--serif)',fontSize:'1.35rem',color:'var(--text)',fontWeight:400,marginBottom:8}}>{story.title}</h3>
+          <div style={{display:'flex',flexWrap:'wrap',gap:4}}>{story.tags.map(t=><span key={t} className={`tag ${t==='achievement'||t==='initiative'?'tag-gold':t==='leadership'||t==='collaboration'?'tag-teal':'tag-coral'}`}>#{t}</span>)}</div>
+        </div>
+      </div>
+
+      <p style={{color:'var(--text-muted)',fontSize:'.85rem',lineHeight:1.7,marginBottom:16}}>{story.summary}</p>
+
+      {/* Usable For */}
+      <div style={{marginBottom:20}}>
+        <p style={{fontSize:'.68rem',color:'var(--text-dim)',textTransform:'uppercase',letterSpacing:'.06em',fontWeight:600,marginBottom:6}}>Usable For</p>
+        <div style={{display:'flex',flexDirection:'column',gap:3}}>
+          {story.usableFor.map((u,i)=><span key={i} style={{fontSize:'.8rem',color:'var(--text-muted)',display:'flex',alignItems:'flex-start',gap:8}}><span style={{color:'var(--gold)',flexShrink:0}}>•</span>{u}</span>)}
+        </div>
+      </div>
+
+      {/* STAR Sections */}
+      <div style={{marginBottom:16}}>
+        {starSections.map(({k,letter,label})=><div key={k}>
+          <div className={`star-label ${isRev(k)?'revealed':''}`} onClick={()=>!isRev(k)&&revealS(k)}>
+            <span className="star-letter">{letter}</span>
+            <span style={{flex:1,fontSize:'.82rem',fontWeight:500}}>{label}</span>
+            {!isRev(k) && <span style={{fontSize:'.68rem',color:'var(--text-dim)'}}>tap to reveal</span>}
+          </div>
+          {isRev(k) && <div className="star-content fade-in">
+            {editing===`${story.id}-${k}` ?
+              <div><textarea className="edit-area" rows={4} defaultValue={getET(k)} autoFocus onBlur={e=>saveEdit(k,e.target.value)} /><span style={{fontSize:'.68rem',color:'var(--text-dim)'}}>Click outside to save</span></div>
+              : <p style={{cursor:'pointer',whiteSpace:'pre-wrap'}} onClick={()=>setEditing(`${story.id}-${k}`)}>{getET(k)}</p>
+            }
+          </div>}
+        </div>)}
+        <div style={{display:'flex',alignItems:'center',gap:12,marginTop:8}}>
+          <button className="btn btn-sm" onClick={revealAll}>Reveal All</button>
+          <span style={{fontSize:'.72rem',color:'var(--text-dim)',fontFamily:'var(--mono)'}}>{story.talkingTime}</span>
+        </div>
+      </div>
+
+      <div className="divider" />
+
+      {/* Confidence */}
+      <div style={{marginBottom:16}}>
+        <p style={{fontSize:'.68rem',color:'var(--text-dim)',textTransform:'uppercase',letterSpacing:'.06em',fontWeight:600,marginBottom:8}}>Rate Confidence</p>
+        <div style={{display:'flex',gap:6}}>
+          {confData.map(c=><button key={c.l} className={`conf-btn ${c.cls} ${d.confidence===c.l?'active':''}`} onClick={()=>setConf(c.l)}>{c.label}</button>)}
+        </div>
+        <div style={{display:'flex',justifyContent:'space-between',marginTop:8,fontSize:'.72rem',color:'var(--text-dim)',fontFamily:'var(--mono)'}}>
+          <span>practiced {d.practiceCount||0}x</span>
+          {d.lastPracticed && <span>last {d.lastPracticed}</span>}
+        </div>
+      </div>
+
+      <div className="divider" />
+
+      {/* Nav */}
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+        <button className="nav-arrow" onClick={()=>nav(-1)}>←</button>
+        <span className="nav-counter">{idx+1} / {filtered.length}</span>
+        <button className="nav-arrow" onClick={()=>nav(1)}>→</button>
+      </div>
+    </div>
+  </div>;
+}
+
+// Tab 3
+function DrillTab({questions, dd, onDd}) {
+  const [idx, setIdx] = useState(0);
+  const [rev, setRev] = useState(false);
+  const [catF, setCatF] = useState('all');
+  const [focus, setFocus] = useState(false);
+  const [shuf, setShuf] = useState(false);
+  const [order, setOrder] = useState(questions.map((_,i)=>i));
+  const [showUsage, setShowUsage] = useState(false);
+
+  const filtered = useMemo(()=>{
+    let r=[...order];
+    if(catF!=='all') r=r.filter(i=>questions[i].category===catF);
+    if(focus) r=r.filter(i=>(dd[questions[i].id]?.accuracy||0)===1);
+    return r;
+  },[order,catF,focus,questions,dd]);
+
+  const shuffle=()=>{const a=[...order];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}setOrder(a);setShuf(true);setIdx(0);setRev(false);};
+
+  const ci=filtered[idx]; const q=ci!==undefined?questions[ci]:null; const qd=q?(dd[q.id]||{}):{};
+  const rate=a=>{if(!q)return;const now=new Date().toISOString().split('T')[0];onDd(p=>({...p,[q.id]:{...(p[q.id]||{}),accuracy:a,drillCount:((p[q.id]||{}).drillCount||0)+1,lastDrilled:now}}));setTimeout(()=>{setRev(false);setIdx(i=>i+1<filtered.length?i+1:0);},250);};
+  const nav=dir=>{setIdx(i=>{const n=i+dir;if(n<0)return filtered.length-1;if(n>=filtered.length)return 0;return n;});setRev(false);};
+
+  const storyUsage = useMemo(()=>{const u={};questions.forEach(q=>{[q.primary,q.alternate].filter(Boolean).forEach(s=>{const k=s.split(' (')[0].trim();if(k&&k!=='N/A')u[k]=(u[k]||0)+1;});});return Object.entries(u).sort((a,b)=>b[1]-a[1]);},[questions]);
+
+  const badgeCls={strong:'badge-strong',partial:'badge-partial',gap:'badge-gap',adaptable:'badge-adaptable'};
+
+  if(!q) return <div style={{textAlign:'center',color:'var(--text-dim)',padding:'48px 0'}}>No questions match filters.{focus?' Try turning off Focus Mode.':''}</div>;
+
+  return <div className="fade-up">
+    <div style={{display:'flex',flexWrap:'wrap',alignItems:'center',justifyContent:'space-between',marginBottom:8,gap:8}}>
+      <h2 className="section-title">Question-Story Drill</h2>
+      <button className="btn btn-sm" onClick={()=>setShowUsage(!showUsage)}>{showUsage?'Hide':'Show'} Story Usage</button>
+    </div>
+    <p className="section-sub">See a question. Think which STAR story you'd use. Reveal the answer.</p>
+
+    {showUsage && <div className="card fade-in" style={{maxHeight:220,overflowY:'auto',marginBottom:16}}>
+      <p style={{fontSize:'.68rem',color:'var(--text-dim)',textTransform:'uppercase',letterSpacing:'.06em',fontWeight:600,marginBottom:8}}>Story Usage Map</p>
+      {storyUsage.slice(0,12).map(([name,count])=><div key={name} style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'4px 0',fontSize:'.8rem'}}>
+        <span style={{color:'var(--text-muted)',flex:1}}>{name}</span>
+        <div style={{display:'flex',alignItems:'center',gap:8}}>
+          <div className="progress-track" style={{width:80}}><div className="progress-fill" style={{width:`${Math.min(count/15*100,100)}%`}}></div></div>
+          <span style={{fontFamily:'var(--mono)',fontSize:'.7rem',color:'var(--text-dim)',width:20,textAlign:'right'}}>{count}</span>
+        </div>
+      </div>)}
+    </div>}
+
+    <div style={{display:'flex',flexWrap:'wrap',gap:8,marginBottom:20}}>
+      <select className="select-input" value={catF} onChange={e=>{setCatF(e.target.value);setIdx(0);setRev(false);}}>
+        <option value="all">All Categories</option>{QUESTION_CATEGORIES.map(c=><option key={c} value={c}>{c}</option>)}
+      </select>
+      <button className={`btn btn-sm`} onClick={()=>{setFocus(!focus);setIdx(0);setRev(false);}} style={focus?{borderColor:'var(--coral-dim)',color:'var(--coral)'}:{}} >Focus: Missed</button>
+      <button className={`btn btn-sm`} onClick={()=>{shuf?(setOrder(questions.map((_,i)=>i)),setShuf(false)):shuffle();setIdx(0);setRev(false);}} style={shuf?{borderColor:'var(--gold-dim)',color:'var(--gold)'}:{}}>{shuf?'Unshuffle':'Shuffle'}</button>
+    </div>
+
+    <div className="card fade-in" style={{maxWidth:640,margin:'0 auto'}}>
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:4}}>
+        <span style={{fontSize:'.72rem',color:'var(--text-dim)',fontFamily:'var(--mono)'}}>Q{q.num} &middot; {q.category}</span>
+        <span className={`badge ${badgeCls[q.coverage]||'badge-strong'}`}>{q.coverage}</span>
+      </div>
+      <h3 style={{fontFamily:'var(--serif)',fontSize:'1.2rem',color:'var(--text)',fontWeight:400,margin:'12px 0 24px'}}>{q.question}</h3>
+
+      {!rev ? <div style={{textAlign:'center',padding:'32px 0'}}>
+        <p style={{color:'var(--text-dim)',marginBottom:16,fontSize:'.85rem'}}>Which STAR story would you use?</p>
+        <button className="btn btn-gold" style={{fontSize:'1rem',padding:'12px 32px'}} onClick={()=>setRev(true)}>Reveal</button>
+      </div>
+      : <div className="fade-in">
+        {q.primary && q.primary!=='N/A' && <div style={{background:'var(--bg-warm)',border:'1px solid var(--gold-dim)',borderRadius:'var(--radius)',padding:'14px 16px',marginBottom:8}}>
+          <p style={{fontSize:'.65rem',color:'var(--gold)',textTransform:'uppercase',letterSpacing:'.06em',fontWeight:600,marginBottom:4}}>Primary</p>
+          <p style={{color:'var(--text)',fontSize:'.9rem',fontWeight:500}}>{q.primary}</p>
+        </div>}
+        {q.alternate && q.alternate!=='N/A' && q.alternate!=='' && <div style={{background:'var(--bg)',border:'1px solid var(--border)',borderRadius:'var(--radius)',padding:'14px 16px',marginBottom:16}}>
+          <p style={{fontSize:'.65rem',color:'var(--text-dim)',textTransform:'uppercase',letterSpacing:'.06em',fontWeight:600,marginBottom:4}}>Alternate</p>
+          <p style={{color:'var(--text-muted)',fontSize:'.85rem'}}>{q.alternate}</p>
+        </div>}
+        <p style={{fontSize:'.68rem',color:'var(--text-dim)',textTransform:'uppercase',letterSpacing:'.06em',fontWeight:600,marginBottom:8}}>How did you do?</p>
+        <div style={{display:'flex',gap:6}}>
+          <button className="conf-btn conf-red" onClick={()=>rate(1)}>Missed</button>
+          <button className="conf-btn conf-yellow" onClick={()=>rate(2)}>Partially</button>
+          <button className="conf-btn conf-green" onClick={()=>rate(3)}>Got It</button>
+        </div>
+        <div style={{display:'flex',justifyContent:'space-between',marginTop:8,fontSize:'.72rem',color:'var(--text-dim)',fontFamily:'var(--mono)'}}>
+          <span>drilled {qd.drillCount||0}x</span>
+          {qd.lastDrilled && <span>last {qd.lastDrilled}</span>}
+        </div>
+      </div>}
+
+      <div className="divider" />
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+        <button className="nav-arrow" onClick={()=>nav(-1)}>←</button>
+        <span className="nav-counter">{idx+1} / {filtered.length}</span>
+        <button className="nav-arrow" onClick={()=>nav(1)}>→</button>
+      </div>
+    </div>
+  </div>;
+}
+
+// Tab 4
+function AskTab({questions, ad, onAd}) {
+  const toggle=id=>onAd(p=>({...p,checked:p.checked?.includes(id)?p.checked.filter(x=>x!==id):[...(p.checked||[]),id]}));
+  const setNote=(id,n)=>onAd(p=>({...p,notes:{...(p.notes||{}),[id]:n}}));
+  const cats=[...new Set(questions.map(q=>q.category))];
+
+  return <div className="fade-up">
+    <h2 className="section-title">Questions for FuJu Chung</h2>
+    <p className="section-sub">Check questions you plan to use. Add personalization notes.</p>
+    {cats.map((cat,ci) => <div key={cat} style={{marginBottom:28}}>
+      <h3 style={{fontFamily:'var(--serif)',fontSize:'1.05rem',color:'var(--gold)',marginBottom:12,fontWeight:400}}>{cat}</h3>
+      {questions.filter(q=>q.category===cat).map((q,qi) => <div key={q.id} className={`card fade-up stagger-${qi+1}`} style={{padding:'16px 18px'}}>
+        <div style={{display:'flex',gap:12,alignItems:'flex-start'}}>
+          <input type="checkbox" className="checkbox-custom" checked={ad.checked?.includes(q.id)||false} onChange={()=>toggle(q.id)} />
+          <div style={{flex:1}}>
+            <p style={{fontSize:'.88rem',color:'var(--text)',lineHeight:1.5}}>{q.text}</p>
+            <p style={{fontSize:'.72rem',color:'var(--text-dim)',marginTop:4}}>Why: {q.why}</p>
+            <textarea className="edit-area" rows={1} placeholder="Add notes..." style={{marginTop:8,minHeight:36,fontSize:'.8rem'}} value={ad.notes?.[q.id]||''} onChange={e=>setNote(q.id,e.target.value)} />
+          </div>
+        </div>
+      </div>)}
+    </div>)}
+  </div>;
+}
+
+// Tab 5
+function PointsTab({tp, concerns}) {
+  const [oTP, setOTP] = useState({});
+  const [oC, setOC] = useState({});
+
+  return <div className="fade-up">
+    <h2 className="section-title">Talking Points</h2>
+    <p className="section-sub">Themes to weave throughout every answer.</p>
+    {tp.map((t,i) => <div key={i} className={`card fade-up stagger-${i+1}`}>
+      <button className="expand-trigger" onClick={()=>setOTP(p=>({...p,[i]:!p[i]}))}>
+        <div><h3 style={{fontFamily:'var(--serif)',fontSize:'1.05rem',fontWeight:400}}>{t.title}</h3><p style={{fontSize:'.82rem',color:'var(--gold)',marginTop:2}}>{t.message}</p></div>
+        <span className={`expand-arrow ${oTP[i]?'open':''}`}>▼</span>
+      </button>
+      {oTP[i] && <div className="expand-body fade-in">
+        <div style={{marginBottom:12}}><p style={{fontSize:'.68rem',color:'var(--text-dim)',textTransform:'uppercase',letterSpacing:'.06em',fontWeight:600,marginBottom:6}}>When to use</p>
+          {t.whenToUse.map((w,j)=><p key={j} style={{fontSize:'.82rem',color:'var(--text-muted)',marginBottom:4,display:'flex',gap:8}}><span style={{color:'var(--gold)',flexShrink:0}}>•</span>{w}</p>)}
+        </div>
+        <div><p style={{fontSize:'.68rem',color:'var(--text-dim)',textTransform:'uppercase',letterSpacing:'.06em',fontWeight:600,marginBottom:6}}>Evidence</p>
+          {t.evidence.map((e,j)=><p key={j} style={{fontSize:'.82rem',color:'var(--text-muted)',marginBottom:4,display:'flex',gap:8}}><span style={{color:'var(--green)',flexShrink:0}}>✓</span>{e}</p>)}
+        </div>
+      </div>}
+    </div>)}
+
+    <div style={{marginTop:36}}><h2 className="section-title">Addressing Concerns</h2><p className="section-sub">Have these ready if they come up. Don't raise proactively.</p></div>
+    {concerns.map((c,i) => <div key={i} className={`card fade-up stagger-${i+1}`}>
+      <button className="expand-trigger" onClick={()=>setOC(p=>({...p,[i]:!p[i]}))}>
+        <h3 style={{fontFamily:'var(--serif)',fontSize:'1.05rem',fontWeight:400,color:'var(--coral)'}}>{c.title}</h3>
+        <span className={`expand-arrow ${oC[i]?'open':''}`}>▼</span>
+      </button>
+      {oC[i] && <div className="expand-body fade-in"><p style={{fontSize:'.85rem',color:'var(--text-muted)',lineHeight:1.7,whiteSpace:'pre-wrap'}}>{c.content}</p></div>}
+    </div>)}
+  </div>;
+}
+
+// Tab 6
+function ChecklistTab({items, checked, onChecked, ty}) {
+  const toggle=id=>onChecked(p=>p.includes(id)?p.filter(x=>x!==id):[...p,id]);
+  const tfs=[...new Set(items.map(i=>i.timeframe))];
+  const [copied, setCopied] = useState(false);
+
+  return <div className="fade-up">
+    <h2 className="section-title">Pre-Interview Checklist</h2>
+    <p className="section-sub">Track your preparation. Progress persists between sessions.</p>
+    {tfs.map((tf,ti) => {
+      const tfItems=items.filter(i=>i.timeframe===tf);
+      const done=tfItems.filter(i=>checked.includes(i.id)).length;
+      const pct=Math.round(done/tfItems.length*100);
+      return <div key={tf} className={`card fade-up stagger-${ti+1}`}>
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:10}}>
+          <h3 style={{fontFamily:'var(--serif)',fontSize:'1.05rem',fontWeight:400,color:pct===100?'var(--green)':'var(--text)'}}>{tf}</h3>
+          <span style={{fontFamily:'var(--mono)',fontSize:'.75rem',color:pct===100?'var(--green)':'var(--text-dim)'}}>{done}/{tfItems.length}</span>
+        </div>
+        <div className="progress-track" style={{marginBottom:14}}><div className="progress-fill" style={{width:`${pct}%`,background:pct===100?'var(--green)':'var(--gold)'}}></div></div>
+        {tfItems.map(item=><label key={item.id} style={{display:'flex',alignItems:'flex-start',gap:10,padding:'6px 0',cursor:'pointer'}}>
+          <input type="checkbox" className="checkbox-custom" checked={checked.includes(item.id)} onChange={()=>toggle(item.id)} />
+          <span style={{fontSize:'.85rem',color:checked.includes(item.id)?'var(--text-dim)':'var(--text)',textDecoration:checked.includes(item.id)?'line-through':'none',transition:'all .2s'}}>{item.text}</span>
+        </label>)}
+      </div>;
+    })}
+
+    <div className="card" style={{marginTop:24}}>
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:14}}>
+        <h3 style={{fontFamily:'var(--serif)',fontSize:'1.05rem',fontWeight:400}}>Thank-You Email</h3>
+        <button className="btn btn-sm btn-gold" onClick={()=>{navigator.clipboard.writeText(ty);setCopied(true);setTimeout(()=>setCopied(false),2000);}}>{copied?'Copied':'Copy'}</button>
+      </div>
+      <pre style={{fontFamily:'var(--sans)',fontSize:'.82rem',color:'var(--text-muted)',lineHeight:1.7,whiteSpace:'pre-wrap',background:'var(--bg)',padding:16,borderRadius:'var(--radius)',border:'1px solid var(--border)'}}>{ty}</pre>
+    </div>
+  </div>;
+}
+
+// ===== APP =====
+
+function App() {
+  const [tab, setTab] = useState('opening');
+  const [sd, setSd] = useLS('kasa-star-data',{});
+  const [dd, setDd] = useLS('kasa-drill-data',{});
+  const [ne, setNe] = useLS('kasa-narrative-edits',{});
+  const [ad, setAd] = useLS('kasa-ask-data',{checked:[],notes:{}});
+  const [cl, setCl] = useLS('kasa-checklist',[]);
+
+  const practiced = Object.values(sd).filter(s=>s.practiceCount>0).length;
+  const drilled = Object.values(dd).filter(d=>d.drillCount>0).length;
+
+  return <div className="app">
+    <div className="header">
+      <div className="header-inner">
+        <div>
+          <h1>Kasa Interview Prep</h1>
+          <p className="header-sub">Property Portfolio Finance Manager &middot; FuJu Chung</p>
+        </div>
+        <div className="header-stats">
+          <div className="stat"><div className="stat-val">{practiced}/{STAR_STORIES.length}</div><div className="stat-label">Stories</div></div>
+          <div className="stat"><div className="stat-val">{drilled}/{QUESTIONS_DATA.length}</div><div className="stat-label">Questions</div></div>
+        </div>
+      </div>
+    </div>
+    <TabNav active={tab} onChange={setTab} />
+    {tab==='opening' && <OpeningTab data={OPENING_NARRATIVES} edits={ne} onEdit={setNe} />}
+    {tab==='star' && <StarTab stories={STAR_STORIES} sd={sd} onSd={setSd} />}
+    {tab==='drill' && <DrillTab questions={QUESTIONS_DATA} dd={dd} onDd={setDd} />}
+    {tab==='ask' && <AskTab questions={QUESTIONS_TO_ASK} ad={ad} onAd={setAd} />}
+    {tab==='points' && <PointsTab tp={TALKING_POINTS} concerns={CONCERNS} />}
+    {tab==='checklist' && <ChecklistTab items={CHECKLIST_ITEMS} checked={cl} onChecked={setCl} ty={THANK_YOU} />}
+    <div style={{textAlign:'center',padding:'32px 0',fontSize:'.72rem',color:'var(--text-dim)',borderTop:'1px solid var(--border)',marginTop:32}}>
+      Progress saved in localStorage &middot; Close and reopen freely
+    </div>
+  </div>;
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
